@@ -3,12 +3,16 @@ package comalwayswannasleep.github.githubfetcher
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Toast
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -54,9 +58,22 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        val container = RelativeLayout(this)
+        val progress = ProgressBar(this)
+        progress.isIndeterminate = true
+        progress.layoutParams = RelativeLayout.LayoutParams(300, 300)
+
+        val progressParams = progress.layoutParams
+        (progressParams as? RelativeLayout.LayoutParams)?.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+
+        container.addView(progress)
         val webView = WebView(this)
 
-        val dialog = AlertDialog.Builder(this).setCancelable(false).setView(webView).create()
+        webView.visibility = View.INVISIBLE
+
+        container.addView(webView)
+
+        val dialog = AlertDialog.Builder(this).setCancelable(false).setView(container).create()
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
@@ -111,6 +128,20 @@ class MainActivity : AppCompatActivity() {
                 })
 
                 return false
+            }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+
+                webView.visibility = View.INVISIBLE
+                progress.visibility = View.VISIBLE
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+
+                webView.visibility = View.VISIBLE
+                progress.visibility = View.GONE
             }
         }
 
